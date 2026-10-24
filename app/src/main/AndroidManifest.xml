@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- No storage permission is declared on purpose: folder access
+         comes entirely from the Storage Access Framework (the system
+         folder picker + a persisted tree grant), and the export is
+         written through the system save picker or shared via a
+         FileProvider cache file. No INTERNET, no account, no
+         READ/WRITE_EXTERNAL_STORAGE, no MANAGE_EXTERNAL_STORAGE. -->
+
+    <application
+        android:label="Folder Dump"
+        android:theme="@style/Theme.FolderDump"
+        android:allowBackup="false"
+        android:supportsRtl="true">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Serves the cached export .txt to the share sheet only.
+             Scoped to the app cache dir; nothing else is exposed. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/filepaths" />
+        </provider>
+
+    </application>
+</manifest>
