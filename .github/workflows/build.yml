@@ -18,10 +18,28 @@ jobs:
           java-version: "17"
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        # ubuntu-latest runners ship a preinstalled SDK; the
+        # android-actions/setup-android action fails on the obsolete
+        # "tools" package, so install the needed packages directly
+        # (same pattern as the Crystal Nova Manager workflow).
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKMANAGER" --licenses > /dev/null
+          "$SDKMANAGER" "platform-tools" "platforms;android-34" "build-tools;34.0.0"
 
       - name: Run unit tests and build debug APK
         run: ./gradlew :app:testDebugUnitTest :app:assembleDebug --no-daemon
+
+      - name: Upload test reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            app/build/reports/tests/testDebugUnitTest/
+            app/build/test-results/testDebugUnitTest/
+          retention-days: 7
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
